@@ -1,13 +1,16 @@
 <?php
 session_start();
 
+// Jika Berhasil Login Masuk Ke Halaman Utama
 if (isset($_SESSION["login"])) {
     header("Location: index.php");
     exit();
 }
 
+// Import Function
 require "function.php";
 
+// Mengajukan Login
 if (isset($_POST["login"])) {
     $login = login($_POST);
 }
@@ -41,6 +44,7 @@ if (isset($_POST["login"])) {
             <button type="submit" name="login" class="btn btn-primary d-flex justify-content-center mt-2 m-auto">Login</button>
         </form>
         <hr>
+        <!-- Link ke Page Register -->
         <div class="row d-flex justify-content-center ">
             <p class="mt-4 col-2">Belum Punya Akun?</p>
             <div class="col-1 align-self-center">

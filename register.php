@@ -1,8 +1,11 @@
 <?php
+// Import Function
 require "function.php";
 
+// Mengajukan Registrasi
 if (isset($_POST["registrasi"])) {
-    // cek data berhasil ditambah atau tidak
+
+    // Cek Berhasil Registrasi atau Tidak
     if (register($_POST) > 0) {
         echo
         "
@@ -52,6 +55,7 @@ if (isset($_POST["registrasi"])) {
             <button type="submit" name="registrasi" class="btn btn-primary d-flex justify-content-center mt-2 m-auto">Registrasi</button>
         </form>
         <hr>
+        <!-- Link ke Page login -->
         <div class="row d-flex justify-content-center ">
             <p class="mt-4 col-2">Sudah Punya Akun?</p>
             <div class="col-1 align-self-center">

@@ -4,13 +4,10 @@ session_start();
 // Import Function
 require 'function.php';
 
-// Id dosen untuk join table
+// Id Dosen yang Login untuk Query Join Table
 $dosen_id = $_SESSION["id"];
 
-// Var Global untuk menandai Update
-$GLOBALS["isUpdate"] = false;
-
-// Log Out
+// Handler Tombol Log Out
 if (isset($_GET["logout"])) {
     $_SESSION["login"] = "";
     session_unset();
@@ -25,8 +22,7 @@ if (!isset($_SESSION["login"])) {
 }
 
 
-
-// Algoritma Trigger Delete Data
+// Handler Tombol Delete Data
 if (isset($_GET["delete_id"])) {
     if (deleteData($_GET["delete_id"]) > 0) {
         echo
@@ -47,41 +43,30 @@ if (isset($_GET["delete_id"])) {
     }
 }
 
-// Algoritma Trigger Update Data
-if (isset($_GET["update_id"])) {
+// Handler Tombol Update Data
+if (isset($_POST["submit_updateData"])) {
 
-    $id = $_GET["update_id"];
-
-    $mhsUpdateRaw = queryGetData("SELECT * FROM mahasiswa WHERE id=$id");
-    $mhsUpdate = $mhsUpdateRaw[0];
-
-    $GLOBALS["isUpdate"] = true;
-
-
-
-    if (isset($_POST["submit_updateData"])) {
-        // cek data berhasil diubah atau tidak
-        if (updateData($_POST) > 0) {
-            echo
-            "
+    // Cek Data Berhasil Diubah atau Tidak
+    if (updateData($_POST) > 0) {
+        echo
+        "
         <script>
         alert('Data Berhasil diubah');
         document.location.href = 'index.php';
         </script>
         ";
-        } else {
-            echo
-            "
+    } else {
+        echo
+        "
         <script>
         alert('Data Gagal diubah');
         document.location.href = 'index.php';
         </script>
         ";
-        }
     }
 }
 
-// Algoritma Trigger Insert Data
+// Handler Tombol Insert Data
 if (isset($_POST["submit_insertData"])) {
 
     //cek data berhasil ditambah atau tidak
@@ -105,10 +90,10 @@ if (isset($_POST["submit_insertData"])) {
 }
 
 
-// Ambil data untuk ditampilkan
-$mahasiswa = queryGetData("SELECT mahasiswa.id, mahasiswa.npm, mahasiswa.nama, mahasiswa.nama_mk, mahasiswa.total, mahasiswa.ip, mahasiswa.grade, mahasiswa.keterangan FROM mahasiswa INNER JOIN dosen ON mahasiswa.dosen_id = dosen.id WHERE mahasiswa.dosen_id = $dosen_id");
+// Ambil Data untuk Ditampilan
+$mahasiswa = queryGetData("SELECT mahasiswa.id, mahasiswa.npm, mahasiswa.nama, mahasiswa.nama_mk, mahasiswa.total, mahasiswa.ip, mahasiswa.grade, mahasiswa.keterangan FROM mahasiswa WHERE dosen_id = $dosen_id");
 
-// Ambil data sesuai yang dicari
+// Ambil Data Sesuai Keyword Pencarian
 if (isset($_POST["submit_keyword"])) {
     $mahasiswa = searchData($_POST["keyword"], $dosen_id);
 }
@@ -123,25 +108,35 @@ if (isset($_POST["submit_keyword"])) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+
     <title>Laman Penilaian</title>
 </head>
 
 <body>
     <main class="container shadow p-3 mb-5 bg-body rounded m-auto mt-5">
         <div class="row mb-2 d-flex">
+            <!-- Tombol Trigger Modal untuk Insert/Tambah Data -->
             <div class="col-4">
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#insertDataModal">+ Tambah Data</button>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modal_form" id="trigger_insert">+ Tambah Data</button>
             </div>
+            <!-- Tombol Logout -->
             <div class="col-8 d-flex justify-content-end">
                 <button type="button" class="btn btn-outline-danger"><a href="index.php?logout=<?= true ?>" class="text-reset text-decoration-none">Log Out</a></button>
             </div>
         </div>
+        <!-- Form dan Tombol Cari -->
         <form action="" method="POST">
-            <div class="input-group mb-3 mt-4">
-                <input type="text" class="form-control" placeholder="Cari Data..." name="keyword">
-                <button type="submit" class="btn btn-outline-success col-4" type="button" name="submit_keyword">Cari</button>
+            <div class="input-group mb-3 mt-4 row">
+                <div class="col-4">
+                    <input type="text" class="form-control" placeholder="Cari Data..." name="keyword">
+                </div>
+                <div class="col-3">
+                    <button type="submit" class="btn btn-outline-success col-4" type="button" name="submit_keyword">Cari</button>
+                </div>
             </div>
         </form>
+        <!-- Tabel yang Menampilkan Data -->
         <div class="table-responsive-md">
             <table class="table">
                 <thead class="table-dark">
@@ -170,10 +165,12 @@ if (isset($_POST["submit_keyword"])) {
                             <td><?= $mhs["grade"]; ?></td>
                             <td><?= $mhs["keterangan"]; ?></td>
                             <td>
-                                <div class="d-flex justify-content-around">
-                                    <button class="btn btn-danger btn-sm" onclick="return confirm('Yakin Menghapus Data?')"><a href="index.php?delete_id=<?= $mhs["id"]; ?>" class="text-reset text-decoration-none">Delete</a></button>
-                                    <button type="button" class="btn btn-success btn-sm justify-self-end" data-bs-toggle="<?php if (isset($GLOBALS["isUpdate"])) echo "modal";
-                                                                                                                            else echo "" ?>" data-bs-target="#updateDataModal"><a href="index.php?update_id=<?= $mhs["id"]; ?>" class="text-reset text-decoration-none">Update</a></button>
+                                <div class="row">
+                                    <!-- Tombol Delete Data -->
+                                    <button class="btn btn-danger btn-sm col-4" onclick="return confirm('Yakin Menghapus Data?')"><a href="index.php?delete_id=<?= $mhs["id"]; ?>" class="text-reset text-decoration-none">Delete</a></button>
+                                    <div class='col-1'></div>
+                                    <!-- Tombol Trigger Modal Update Data -->
+                                    <button type="button" class="btn btn-success btn-sm justify-self-end col-4 trigger_update" data-bs-toggle="modal" data-bs-target="#modal_form" data-id="<?= $mhs['id']; ?>">Update</button>
                                 </div>
                             </td>
                         </tr>
@@ -184,112 +181,65 @@ if (isset($_POST["submit_keyword"])) {
         </div>
     </main>
 
-    <!-- Modal Insert Data-->
-    <div class="modal fade" id="insertDataModal" tabindex="-1" aria-labelledby="insertDataModal" aria-hidden="true">
+    <!-- Modal untuk Insert/Tambah dan Update Data-->
+    <div class="modal fade" id="modal_form" tabindex="-1" aria-labelledby="modal_form" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Insert Data</h5>
+                    <h5 class="modal-title" id="modal_label">Insert Data</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="" method="POST">
-                    <input type="hidden" name="dosen_id" value="<?= $dosen_id ?>">
-                    <div class="modal-body">
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="npm" name="npm" placeholder="NPM Mahasiswa" required>
-                            <label for="npm">NPM Mahasiswa</label>
+                    <input type="hidden" name='id' id="id">
+                    <input type="hidden" name="dosen_id" id='dosen_id' value="<?= $dosen_id ?>">
+                    <div class="modal-body row">
+                        <div class="col-6">
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control form-control-sm" id="npm" name="npm" placeholder="NPM Mahasiswa" required>
+                                <label for="npm">NPM Mahasiswa</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control form-control-sm" id="nama" name="nama" placeholder="Nama Mahasiswa" required>
+                                <label for="Nama">Nama Mahasiswa</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control form-control-sm" id="nama_mk" name="nama_mk" placeholder="Nama Mata Kuliah Mahasiswa" required>
+                                <label for="Nama Mata Kuliah">Nama Mata Kuliah</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control form-control-sm" id="nKehadiran" name="nKehadiran" placeholder="Nilai Kehadiran Mahasiswa" required>
+                                <label for="Nilai Kehadiran">Nilai Keaktifan&Kehadiran Mahasiswa</label>
+                            </div>
                         </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nama" name="nama" placeholder="Nama Mahasiswa" required>
-                            <label for="Nama">Nama Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nama Mata Kuliah" name="nama_mk" placeholder="Nama Mata Kuliah Mahasiswa" required>
-                            <label for="Nama Mata Kuliah">Nama Mata Kuliah</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nilai Kehadiran" name="nKehadiran" placeholder="Nilai Kehadiran Mahasiswa" required>
-                            <label for="Nilai Kehadiran">Nilai Kehadiran&Keaktifan Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nilai Tugas" name="nTugas" placeholder="Nilai Tugas Mahasiswa" required>
-                            <label for="Nilai Tugas">Nilai Tugas Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nilai Quiz" name="nQuiz" placeholder="Nilai Quiz Mahasiswa" required>
-                            <label for="Nilai Quiz">Nilai Quiz Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nilai UTS" name="nUts" placeholder="Nilai UTS Mahasiswa" required>
-                            <label for="Nilai UTS">Nilai UTS Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nilai UAS" name="nUas" placeholder="Nilai UAS Mahasiswa" required>
-                            <label for="Nilai UAS">Nilai UAS Mahasiswa</label>
+                        <div class="col-6">
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control form-control-sm" id="nTugas" name="nTugas" placeholder="Nilai Tugas Mahasiswa" required>
+                                <label for="Nilai Tugas">Nilai Tugas Mahasiswa</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control form-control-sm" id="nQuiz" name="nQuiz" placeholder="Nilai Quiz Mahasiswa" required>
+                                <label for="Nilai Quiz">Nilai Quiz Mahasiswa</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control form-control-sm" id="nUts" name="nUts" placeholder="Nilai UTS Mahasiswa" required>
+                                <label for="Nilai UTS">Nilai UTS Mahasiswa</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="text" class="form-control form-control-sm" id="nUas" name="nUas" placeholder="Nilai UAS Mahasiswa" required>
+                                <label for="Nilai UAS">Nilai UAS Mahasiswa</label>
+                            </div>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="reset" class="btn btn-danger">Reset</button>
-                        <button type="submit" name="submit_insertData" class="btn btn-primary">Submit</button>
+                        <button type="submit" name="submit_insertData" class="btn btn-primary" id="modal_button">Submit</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Modal Update Data-->
-    <div class="modal fade" id="updateDataModal" tabindex="-1" aria-labelledby="updateDataModal" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Update Data</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="document.location.href='index.php'; <?php $GLOBALS['isUpdate'] = false ?>"></button>
-                </div>
-                <form action="" method="POST">
-                    <input type="hidden" name="id" value="<?= $mhsUpdate["id"] ?>">
-                    <input type="hidden" name="dosen_id" value="<?= $dosen_id ?>">
-                    <div class="modal-body">
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="npm" name="npm" placeholder="NPM Mahasiswa" required value="<?= $mhsUpdate["npm"] ?>">
-                            <label for="npm">NPM Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nama" name="nama" placeholder="Nama Mahasiswa" required value="<?= $mhsUpdate["nama"] ?>">
-                            <label for="Nama">Nama Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nama Mata Kuliah" name="nama_mk" placeholder="Nama Mata Kuliah Mahasiswa" required value="<?= $mhsUpdate["nama_mk"] ?>">
-                            <label for="Nama Mata Kuliah">Nama Mata Kuliah</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nilai Kehadiran" name="nKehadiran" placeholder="Nilai Kehadiran Mahasiswa" required value="<?= $mhsUpdate["nKehadiran"] ?>">
-                            <label for="Nilai Kehadiran">Nilai Kehadiran&Keaktifan Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nilai Tugas" name="nTugas" placeholder="Nilai Tugas Mahasiswa" required value="<?= $mhsUpdate["nTugas"] ?>">
-                            <label for="Nilai Tugas">Nilai Tugas Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nilai Quiz" name="nQuiz" placeholder="Nilai Quiz Mahasiswa" required value="<?= $mhsUpdate["nQuiz"] ?>">
-                            <label for="Nilai Quiz">Nilai Quiz Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nilai UTS" name="nUts" placeholder="Nilai UTS Mahasiswa" required value="<?= $mhsUpdate["nUts"] ?>">
-                            <label for="Nilai UTS">Nilai UTS Mahasiswa</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="text" class="form-control form-control-sm" id="Nilai UAS" name="nUas" placeholder="Nilai UAS Mahasiswa" required value="<?= $mhsUpdate["nUas"] ?>">
-                            <label for="Nilai UAS">Nilai UAS Mahasiswa</label>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="reset" class="btn btn-danger" onclick="<?php $GLOBALS['isUpdate'] = false ?>">Reset</button>
-                        <button type="submit" name="submit_updateData" class="btn btn-primary" onclick="<?php $GLOBALS['isUpdate'] = false ?>">Update</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+    <script src="./index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
 </body>
 
