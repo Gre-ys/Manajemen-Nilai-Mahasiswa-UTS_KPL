@@ -190,8 +190,8 @@ if (isset($_POST["submit_keyword"])) {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form action="" method="POST">
-                    <input type="hidden" name='id' id="id">
-                    <input type="hidden" name="dosen_id" id='dosen_id' value="<?= $dosen_id ?>">
+                    <input type="hidden" name='id'>
+                    <input type="hidden" name="dosen_id" value="<?= $dosen_id ?>">
                     <div class="modal-body row">
                         <div class="col-6">
                             <div class="form-floating mb-2">

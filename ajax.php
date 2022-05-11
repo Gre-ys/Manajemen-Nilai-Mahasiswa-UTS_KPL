@@ -1,7 +1,4 @@
 <?php
-// Redirect Agar Tidak Ada yang Bisa Akses File Ini
-header("Location: index.php");
-
 // Import Function
 require 'function.php';
 
